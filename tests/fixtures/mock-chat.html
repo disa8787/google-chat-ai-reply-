@@ -1,0 +1,116 @@
+<!doctype html>
+<!--
+  Minimal stand-in for a Google Chat direct message, using the same markup the
+  extension relies on (div.nF6pT rows, div.DTp27d[jsname=bgckF] message text,
+  data-member-id, data-absolute-timestamp, contenteditable composer).
+  Options in the query string:
+    ?ts=0         messages carry no timestamps or sender ids
+    ?button=0     no send button (the extension must press Enter)
+    ?old=0        start without an old offer in the history
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Chat</title>
+    <style>
+      body { margin: 0; font: 14px Roboto, Arial, sans-serif; }
+      nav { position: fixed; left: 0; top: 0; bottom: 0; width: 250px; border-right: 1px solid #ddd; }
+      main { position: absolute; left: 250px; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; }
+      header { padding: 12px 16px; border-bottom: 1px solid #ddd; }
+      .list { flex: 1; overflow-y: auto; padding: 0 16px; }
+      .nF6pT { display: flex; margin: 6px 0; }
+      .nF6pT.own { justify-content: flex-end; }
+      .avatar { width: 32px; height: 32px; border-radius: 50%; background: #ccc; margin-right: 8px; flex: none; }
+      .bubble { background: #eee; border-radius: 16px; padding: 8px 12px; max-width: 70%; white-space: pre-wrap; }
+      .own .bubble { background: #d3e3fd; }
+      .composer-row { display: flex; gap: 8px; padding: 8px 16px; }
+      [contenteditable] { flex: 1; border: 1px solid #ccc; border-radius: 20px; min-height: 22px; padding: 8px 12px; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div role="tree">
+        <div role="treeitem"><a href="https://chat.google.com/u/0/dm/AAA">Uber Freight No Rep.</a></div>
+      </div>
+    </nav>
+    <main role="main">
+      <header aria-label="Uber Freight No Rep.">Uber Freight No Rep.</header>
+      <div class="list" id="list"></div>
+      <div class="composer-row" id="composerRow">
+        <div contenteditable="true" role="textbox" aria-label="Message Uber Freight No Rep." id="composer"></div>
+      </div>
+    </main>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const withMeta = params.get('ts') !== '0';
+      const ME = 'user/human/999';
+      const BROKER = 'user/human/111';
+      const list = document.getElementById('list');
+      const composer = document.getElementById('composer');
+      window.sent = [];
+
+      window.addMessage = (text, { own = false, ageMinutes = 0 } = {}) => {
+        const row = document.createElement('div');
+        row.className = 'nF6pT' + (own ? ' own' : '');
+        if (!own) {
+          const avatar = document.createElement('div');
+          avatar.className = 'avatar';
+          row.append(avatar);
+        }
+        const col = document.createElement('div');
+        if (withMeta) {
+          const sender = document.createElement('span');
+          sender.setAttribute('data-member-id', own ? ME : BROKER);
+          sender.hidden = true;
+          const time = document.createElement('span');
+          time.className = 'FvYVyf';
+          // Chat keeps microseconds
+          time.setAttribute('data-absolute-timestamp', String((Date.now() - ageMinutes * 60000) * 1000));
+          time.hidden = true;
+          col.append(sender, time);
+        }
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        const textEl = document.createElement('div');
+        textEl.className = 'DTp27d';
+        textEl.setAttribute('jsname', 'bgckF');
+        textEl.textContent = text;
+        bubble.append(textEl);
+        col.append(bubble);
+        row.append(col);
+        list.append(row);
+        list.scrollTop = list.scrollHeight;
+      };
+
+      function doSend() {
+        const text = composer.innerText.trim();
+        if (!text) return;
+        window.sent.push(text);
+        composer.textContent = '';
+        setTimeout(() => window.addMessage(text, { own: true }), 150);
+      }
+
+      if (params.get('button') !== '0') {
+        const button = document.createElement('button');
+        button.setAttribute('aria-label', 'Send message');
+        button.textContent = 'Send';
+        button.addEventListener('click', doSend);
+        document.getElementById('composerRow').append(button);
+      }
+      composer.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          doSend();
+        }
+      });
+
+      addMessage('Hi, are you available this week?', { ageMinutes: 300 });
+      addMessage('yes', { own: true, ageMinutes: 290 });
+      if (params.get('old') !== '0') {
+        addMessage('UF-1111111111 • Gary, IN → Dallas, TX\nLive pickup: Oct 01, 2026\nDry van\n20000 lbs', {
+          ageMinutes: 120,
+        });
+      }
+    </script>
+  </body>
+</html>

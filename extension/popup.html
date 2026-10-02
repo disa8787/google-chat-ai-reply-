@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Load Offer Auto-Reply</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Автоответ на грузы</h1>
+      <label class="switch" title="Включить / выключить">
+        <input type="checkbox" id="enabled" />
+        <span></span>
+      </label>
+    </header>
+    <p id="status" class="status"></p>
+
+    <section>
+      <label for="replyText">Текст ответа</label>
+      <input type="text" id="replyText" maxlength="200" />
+
+      <label for="maxAgeMinutes">Отвечать на сообщения не старше (минут)</label>
+      <input type="number" id="maxAgeMinutes" min="1" max="1440" />
+
+      <label class="check">
+        <input type="checkbox" id="testMode" />
+        Тестовый режим — только подсвечивать груз, ничего не отправлять
+      </label>
+      <label class="check">
+        <input type="checkbox" id="autoOpenUnread" />
+        Самому открывать непрочитанные личные чаты (экспериментально)
+      </label>
+    </section>
+
+    <section>
+      <label for="sample">Проверить сообщение</label>
+      <textarea id="sample" rows="4" placeholder="Вставьте сюда текст от брокера…"></textarea>
+      <p id="verdict" class="verdict"></p>
+    </section>
+
+    <section>
+      <div class="row">
+        <h2>Журнал</h2>
+        <button id="clearLog" type="button">Очистить</button>
+      </div>
+      <ul id="log"></ul>
+    </section>
+
+    <script src="detector.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
